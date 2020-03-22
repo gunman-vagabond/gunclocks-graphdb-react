@@ -1,11 +1,4 @@
 import React, { Component } from 'react';
-//import { ApolloClient, gql } from "apollo-boost";
-//import { ApolloClient } from "apollo-boost";
-//import { Query } from "react-apollo";
-//import { graphql } from "react-apollo";
-//import gql from "graphql-tag";
-//import { useQuery } from '@apollo/react-hooks';
-//import { useQuery } from 'react-apollo-hooks';
 
 import {getGunClock} from './GunClock.draw';
 import {myenvironment} from './myenvironments/myenvironment';
@@ -23,7 +16,10 @@ export default class Gunclock extends Component {
             _id,
             uuid,
             size,
-            color
+            color,
+            city{name},
+            shortHandCast{name},
+            longHandCast{name}
           }
         }
       `
@@ -163,7 +159,10 @@ export default class Gunclock extends Component {
             _id,
             uuid,
             size,
-            color
+            color,
+            city{name},
+            shortHandCast{name},
+            longHandCast{name}
           }
         }
       `
@@ -302,6 +301,9 @@ export default class Gunclock extends Component {
         <th align="left">uuid</th>
         <th align="right">size</th>
         <th align="left">color</th>
+        <th align="left">city</th>
+        <th align="left">shortHandCast</th>
+        <th align="left">longHandCast</th>
         <th></th>
         <th></th>
         <th></th>
@@ -314,6 +316,9 @@ export default class Gunclock extends Component {
          <td align="left">{gunclock.uuid}</td>
          <td align="right">{gunclock.size}</td>
          <td align="left" bgcolor={gunclock.color}>{gunclock.color}</td>
+         <td align="left">{gunclock.city.name}</td>
+         <td align="left">{gunclock.shortHandCast.name}</td>
+         <td align="left">{gunclock.longHandCast.name}</td>
          <td>
           <button onClick={ () => { this.showGunclockGQL(gunclock.uuid) }}>表示</button>
          </td>
