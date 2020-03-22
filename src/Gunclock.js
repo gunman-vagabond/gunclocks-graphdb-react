@@ -13,7 +13,6 @@ import {myenvironment} from './myenvironments/myenvironment';
 const GUNCLOCK_GRAPHDB = myenvironment.GUNCLOCK_GRAPHDB;
 
 export default class Gunclock extends Component {
-//class Gunclock extends Component {
 
   getGunclocksGQL() {
 
@@ -285,14 +284,6 @@ export default class Gunclock extends Component {
     });
   }
 
-  removeGunclock = (index) => {
-    const { gunclocks } = this.state;
-    delete gunclocks[index];
-    this.setState({
-      gunclocks: gunclocks 
-    });
-  }
-
   render() {
     console.log("render(): started.");
     const { gunclocks, gunclock_id, gunclock_uuid, gunclock_size, gunclock_color, gunclock_string } = this.state;
@@ -300,7 +291,7 @@ export default class Gunclock extends Component {
     return (
     <div>
      <div
-      className="update"
+      className="list"
       style={{display: (this.state.updateFlag+this.state.showFlag) ? 'none': ''}}
      >
 
@@ -421,7 +412,3 @@ export default class Gunclock extends Component {
   }
 
 }
-
-//export default graphql(GET_GUNCLOCKS, { name: "getGunclocks" })(Gunclock);
-//export default graphql(GET_GUNCLOCKS, { name: "getGunclocks" })(Gunclock);
-
