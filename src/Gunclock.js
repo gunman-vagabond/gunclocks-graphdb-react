@@ -12,63 +12,6 @@ import {myenvironment} from './myenvironments/myenvironment';
 
 const GUNCLOCK_GRAPHDB = myenvironment.GUNCLOCK_GRAPHDB;
 
-const GET_GUNCLOCKS = `
-  { 
-    Gunclock {
-      _id,
-      uuid,
-      size,
-      color
-    }
-  }
-`;
-
-const VIEW_GUNCLOCK = `
-  query ($uuid: String) {
-    Gunclock(uuid: $uuid) {
-      _id,
-      uuid,
-      size,
-      color
-    }
-  }
-`;
-
-const CREATE_GUNCLOCK = `
-  mutation($size: Int, $color: String) {
-    createGunclock(
-      size: $size,
-      color: $color,
-      cityName: "Tokyo",
-      shortHandCastName: "gunman",
-      longHandCastName: "uma"
-    )
-  }
-`;
-
-
-const UPDATE_GUNCLOCK = `
-  mutation($uuid: String, $size: Int, $color: String) {
-    updateGunclock(
-      uuid: $uuid,
-      size: $size,
-      color: $color,
-      cityName: "Tokyo",
-      shortHandCastName: "gunman",
-      longHandCastName: "uma"
-    )
-  }
-`;
-
-const DELETE_GUNCLOCK = `
-  mutation($uuid: String) {
-    deleteGunclock(
-      uuid: $uuid
-    )
-  }
-`;
-
-
 export default class Gunclock extends Component {
 //class Gunclock extends Component {
 
@@ -114,29 +57,12 @@ export default class Gunclock extends Component {
 
     });
 
-//    console.log("getGunclockGQL(): started.");
-//    var gunclocks_json = [];
-
-//    var data = useQuery(GET_GUNCLOCKS);
-
-//    var gunclocks = this.props.getGunclocks.Gunclock;
-//    console.log(this.props);
-//    console.log(props);
-//    console.log(gunclocks);
-
-//    var result = graphql(GET_GUNCLOCKS);
-//    console.log(result);
-
   }
 
   createGunclockGQL(gunclock_size, gunclock_color) {
 
     console.log("gunclock_size="+gunclock_size);
     console.log("gunclock_color="+gunclock_color);
-
-    var gunclock_size_int = parseInt(gunclock_size);
-    var gunclock_color_ = '"' + gunclock_color + '"';
-    console.log("gunclock_color_="+gunclock_color_);
 
     var inputData = { 
      query : `

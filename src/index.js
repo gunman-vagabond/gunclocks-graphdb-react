@@ -13,7 +13,7 @@ import * as serviceWorker from './serviceWorker';
 //);
 ReactDOM.render(
   <React.StrictMode>
-    <Gunclock />
+    <Gunclock />,
   </React.StrictMode>,
   document.getElementById('root')
 );
