@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import {getGunClock} from './GunClock.draw';
+import {getGunClock} from './GunClockWorld';
 import {myenvironment} from './myenvironments/myenvironment';
 
 const GUNCLOCK_GRAPHDB = myenvironment.GUNCLOCK_GRAPHDB;
@@ -48,13 +48,18 @@ export default class Gunclock extends Component {
         gunclock_size: '',
         gunclock_color: '',
         gunclock_string : '',
+        gunclock_city_name : '',
+        gunclock_shortHandCast_name : '',
+        gunclock_longHandCast_name : '',
       });
 
     });
 
   }
 
-  createGunclockGQL(gunclock_size, gunclock_color) {
+//  createGunclockGQL(gunclock_size, gunclock_color) {
+  createGunclockGQL() {
+    const { gunclock_size, gunclock_color, gunclock_city_name, gunclock_shortHandCast_name, gunclock_longHandCast_name } = this.state;
 
     console.log("gunclock_size="+gunclock_size);
     console.log("gunclock_color="+gunclock_color);
@@ -65,9 +70,9 @@ export default class Gunclock extends Component {
           createGunclock(
             size: ` + gunclock_size + `,
             color: "` + gunclock_color + `",
-            cityName: "Tokyo",
-            shortHandCastName: "gunman",
-            longHandCastName: "uma"
+            cityName: "` + gunclock_city_name + `",
+            shortHandCastName: "` + gunclock_shortHandCast_name + `",
+            longHandCastName: "` + gunclock_longHandCast_name + `"
           ) {
             _id
           }
@@ -96,7 +101,7 @@ export default class Gunclock extends Component {
   }
 
   updateGunclockGQL(uuid) {
-    const { gunclock_size, gunclock_color } = this.state;
+    const { gunclock_size, gunclock_color, gunclock_city_name, gunclock_shortHandCast_name, gunclock_longHandCast_name } = this.state;
 
     console.log("updateGunclockGQL(): started.");
 
@@ -107,9 +112,9 @@ export default class Gunclock extends Component {
             uuid: "` + uuid + `",
             size: ` + gunclock_size + `,
             color: "` + gunclock_color + `",
-            cityName: "Tokyo",
-            shortHandCastName: "gunman",
-            longHandCastName: "uma"
+            cityName: "` + gunclock_city_name + `",
+            shortHandCastName: "` + gunclock_shortHandCast_name + `",
+            longHandCastName: "` + gunclock_longHandCast_name + `"
           ) {
             _id
           }
@@ -141,6 +146,9 @@ export default class Gunclock extends Component {
         gunclock_size : '',
         gunclock_color : '',
         gunclock_string : '',
+        gunclock_city_name : '',
+        gunclock_shortHandCast_name : '',
+        gunclock_longHandCast_name : '',
         updateFlag : false
       });
 
@@ -161,8 +169,8 @@ export default class Gunclock extends Component {
             size,
             color,
             city{name},
-            shortHandCast{name},
-            longHandCast{name}
+            shortHandCast{name,text},
+            longHandCast{name,text}
           }
         }
       `
@@ -184,17 +192,33 @@ export default class Gunclock extends Component {
     })
     .then((response_json) => {
       console.log(response_json);
-      var gunclock_string = getGunClock(response_json.data.Gunclock[0].size);
+      var gunclock_string 
+        = getGunClock(
+           { 
+             size :  response_json.data.Gunclock[0].size, 
+             cityName  : response_json.data.Gunclock[0].city.name, 
+             shortHandCastText : response_json.data.Gunclock[0].shortHandCast.text,
+             longHandCastText : response_json.data.Gunclock[0].longHandCast.text,
+//           targetTimezoneOffsetHour : -9
+           }
+        );
         console.log(response_json.data.Gunclock[0]._id);
         console.log(response_json.data.Gunclock[0].uuid);
         console.log(response_json.data.Gunclock[0].size);
         console.log(response_json.data.Gunclock[0].color);
+        console.log(response_json.data.Gunclock[0].shortHandCast.name);
+        console.log(response_json.data.Gunclock[0].longHandCast.text);
+        console.log(response_json.data.Gunclock[0].longHandCast.name);
+        console.log(response_json.data.Gunclock[0].shortHandCast.text);
         console.log(gunclock_string);
       this.setState({
         gunclock_id: response_json.data.Gunclock[0]._id,
         gunclock_uuid: response_json.data.Gunclock[0].uuid,
         gunclock_size: response_json.data.Gunclock[0].size,
         gunclock_color: response_json.data.Gunclock[0].color,
+        gunclock_city_name: response_json.data.Gunclock[0].city.name,
+        gunclock_shortHandCast_name: response_json.data.Gunclock[0].shortHandCast.name,
+        gunclock_longHandCast_name: response_json.data.Gunclock[0].longHandCast.name,
         gunclock_string: gunclock_string,
         showFlag: true,
         updateFlag: false
@@ -247,6 +271,9 @@ export default class Gunclock extends Component {
       gunclock_size: '',
       gunclock_color: '',
       gunclock_string: '',
+      gunclock_city_name: '',
+      gunclock_shortHandCast_name: '',
+      gunclock_longHandCast_name: '',
       updateFlag: false,
       showFlag: false
     };
@@ -266,18 +293,40 @@ export default class Gunclock extends Component {
     });
   }
 
-  addGunclock = () => {
-    const { gunclock_size, gunclock_color } = this.state;
-    console.log("gunclock_size" + gunclock_size + ", gunclock_color" + gunclock_color);
-    this.createGunclockGQL(gunclock_size, gunclock_color);
+  onChangeSelectCity = (e) => {
+    this.setState( {
+     gunclock_city_name: e.target.value
+    });
   }
 
-  updateGunclock = (uuid, size, color) => {
+  onChangeSelectShortHandCast = (e) => {
+    this.setState( {
+     gunclock_shortHandCast_name: e.target.value
+    });
+  }
+
+  onChangeSelectLongHandCast = (e) => {
+    this.setState( {
+     gunclock_longHandCast_name: e.target.value
+    });
+  }
+
+  addGunclock = () => {
+//    const { gunclock_size, gunclock_color } = this.state;
+//    console.log("gunclock_size" + gunclock_size + ", gunclock_color" + gunclock_color);
+//    this.createGunclockGQL(gunclock_size, gunclock_color);
+    this.createGunclockGQL();
+  }
+
+  updateGunclock = (uuid, size, color, city_name, shortHandCast_name, longHandCast_name) => {
     console.log("updateGunclock(): started.");
     this.setState({
       gunclock_uuid : uuid,
       gunclock_size : size,
       gunclock_color : color,
+      gunclock_city_name : city_name,
+      gunclock_shortHandCast_name : shortHandCast_name,
+      gunclock_longHandCast_name : longHandCast_name,
       showFlag : false,
       updateFlag : true
     });
@@ -285,7 +334,17 @@ export default class Gunclock extends Component {
 
   render() {
     console.log("render(): started.");
-    const { gunclocks, gunclock_id, gunclock_uuid, gunclock_size, gunclock_color, gunclock_string } = this.state;
+    const { 
+      gunclocks, 
+      gunclock_id, 
+      gunclock_uuid, 
+      gunclock_size, 
+      gunclock_color, 
+      gunclock_city_name,
+      gunclock_shortHandCast_name,
+      gunclock_longHandCast_name,
+      gunclock_string
+    } = this.state;
 
     return (
     <div>
@@ -293,6 +352,9 @@ export default class Gunclock extends Component {
       className="list"
       style={{display: (this.state.updateFlag+this.state.showFlag) ? 'none': ''}}
      >
+
+      <hr />
+      <h1>list of gunclocks</h1> 
 
       <table border="1" cellSpacing="0" cellpading="0">
        <thead>
@@ -323,7 +385,7 @@ export default class Gunclock extends Component {
           <button onClick={ () => { this.showGunclockGQL(gunclock.uuid) }}>表示</button>
          </td>
          <td>
-          <button onClick={ () => { this.updateGunclock(gunclock.uuid, gunclock.size, gunclock.color) }}>更新</button>
+          <button onClick={ () => { this.updateGunclock(gunclock.uuid, gunclock.size, gunclock.color, gunclock.city.name, gunclock.shortHandCast.name, gunclock.longHandCast.name) }}>更新</button>
          </td>
          <td>
           <button onClick={ () => { this.deleteGunclockGQL(gunclock.uuid) }}>削除</button>
@@ -335,11 +397,50 @@ export default class Gunclock extends Component {
 
       <br />
 
+      <hr />
+
+      <h1>create new gunclock</h1>
+
       size:
       <input type="text" onInput={this.onInputSize}/>
       color:
       <input type="text" onInput={this.onInputColor}/>
+      <br />
+
+      city:
+      <select value={this.state.gunclock_city_name} onChange={this.onChangeSelectCity}>
+       <option value="Tokyo">Tokyo</option>
+       <option value="Shanghai">Shanghai</option>
+       <option value="Sydney">Sydney</option>
+       <option value="Moscow">Moscow</option>
+       <option value="Berlin">Berlin</option>
+       <option value="Paris">Paris</option>
+       <option value="London">London</option>
+       <option value="Cairo">Cairo</option>
+       <option value="NewYork">NewYork</option>
+       <option value="LosAngeles">LosAngeles</option>
+       <option value="Sao_Paulo">Sao_Paulo</option>
+      </select>
+
+      shortHandCast:
+      <select value={this.state.gunclock_shortHandCast_name} onChange={this.onChangeSelectShortHandCast}>
+       <option value="gunman">gunman</option>
+       <option value="uma">uma</option>
+       <option value="gunman2">gunman2</option>
+       <option value="oni">oni</option>
+      </select>
+
+      longHandCast:
+      <select value={this.state.gunclock_longHandCast_name} onChange={this.onChangeSelectLongHandCast}>
+       <option value="uma">uma</option>
+       <option value="gunman">gunman</option>
+       <option value="gunman2">gunman2</option>
+       <option value="oni">oni</option>
+      </select>
+      <br />
+
       <button onClick={this.addGunclock}>登録</button>
+      <hr />
 
      </div>
 
@@ -347,6 +448,9 @@ export default class Gunclock extends Component {
       className="update"
       style={{display: this.state.updateFlag? '': 'none'}}
      >
+      <hr />
+      <h1>update gunclock</h1> 
+
       id:
       {gunclock_id}<br/>
       uuid:
@@ -356,16 +460,55 @@ export default class Gunclock extends Component {
       <input type="text" value={gunclock_size} onChange={this.onInputSize}/>
       color:
       <input type="text" value={gunclock_color} onChange={this.onInputColor}/>
+      <br />
+
+      city:
+      <select value={gunclock_city_name} onChange={this.onChangeSelectCity}>
+       <option value="Tokyo">Tokyo</option>
+       <option value="Shanghai">Shanghai</option>
+       <option value="Sydney">Sydney</option>
+       <option value="Moscow">Moscow</option>
+       <option value="Berlin">Berlin</option>
+       <option value="Paris">Paris</option>
+       <option value="London">London</option>
+       <option value="Cairo">Cairo</option>
+       <option value="NewYork">NewYork</option>
+       <option value="LosAngeles">LosAngeles</option>
+       <option value="Sao_Paulo">Sao_Paulo</option>
+      </select>
+
+      shortHandCast:
+      <select value={gunclock_shortHandCast_name} onChange={this.onChangeSelectShortHandCast}>
+       <option value="gunman">gunman</option>
+       <option value="uma">uma</option>
+       <option value="gunman2">gunman2</option>
+       <option value="oni">oni</option>
+      </select>
+
+      longHandCast:
+      <select value={gunclock_longHandCast_name} onChange={this.onChangeSelectLongHandCast}>
+       <option value="uma">uma</option>
+       <option value="gunman">gunman</option>
+       <option value="gunman2">gunman2</option>
+       <option value="oni">oni</option>
+      </select>
+      <br />
+
       <button onClick={() => {this.updateGunclockGQL(gunclock_uuid)}}>更新</button>
 
       <br />
       <a href="/">戻る</a>
+      <hr />
+
      </div>
 
      <div
       className="show"
       style={{display: this.state.showFlag? '': 'none'}}
      >
+
+      <hr />
+      <h1>show gunclock</h1>
 
       <table border="1" cellSpacing="0" cellpading="0">
        <thead>
@@ -374,6 +517,9 @@ export default class Gunclock extends Component {
         <th align="left">uuid</th>
         <th align="right">size</th>
         <th align="left">color</th>
+        <th align="left">city</th>
+        <th align="left">shortHandCast</th>
+        <th align="left">longHandCast</th>
         <th></th>
         <th></th>
         <th></th>
@@ -385,6 +531,9 @@ export default class Gunclock extends Component {
          <td align="left">{gunclock_uuid}</td>
          <td align="right">{gunclock_size}</td>
          <td align="left" bgcolor={gunclock_color}>{gunclock_color}</td>
+         <td align="left">{gunclock_city_name}</td>
+         <td align="left">{gunclock_shortHandCast_name}</td>
+         <td align="left">{gunclock_longHandCast_name}</td>
          <td>
           <button onClick={ () => { this.showGunclockGQL(gunclock_uuid) }}>表示</button>
          </td>
@@ -410,6 +559,8 @@ export default class Gunclock extends Component {
 
       <br />
       <a href="/">戻る</a>
+      <hr />
+
      </div>
 
     </div>
