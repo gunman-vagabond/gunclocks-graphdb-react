@@ -41,7 +41,7 @@ export default class Gunclock extends Component {
     })
     .then((response_json) => {
       console.log(response_json);
-      this.setState({
+      this.safeSetState({
         gunclocks: response_json.data.Gunclock,
         gunclock_id : '',
         gunclock_uuid : '',
@@ -63,22 +63,29 @@ export default class Gunclock extends Component {
 
     console.log("gunclock_size="+gunclock_size);
     console.log("gunclock_color="+gunclock_color);
+    // Use GraphQL variables to avoid fragile string concatenation and quoting issues
+    const query = `mutation CreateGunclock($size: Int!, $color: String!, $cityName: String!, $shortHandCastName: String!, $longHandCastName: String!) {
+      createGunclock(
+        size: $size,
+        color: $color,
+        cityName: $cityName,
+        shortHandCastName: $shortHandCastName,
+        longHandCastName: $longHandCastName
+      ) { _id }
+    }`;
 
-    var inputData = { 
-     query : `
-        mutation {
-          createGunclock(
-            size: ` + gunclock_size + `,
-            color: "` + gunclock_color + `",
-            cityName: "` + gunclock_city_name + `",
-            shortHandCastName: "` + gunclock_shortHandCast_name + `",
-            longHandCastName: "` + gunclock_longHandCast_name + `"
-          ) {
-            _id
-          }
-        }
-      `
-    }
+    const variables = {
+      size: Number(gunclock_size) || 0,
+      color: gunclock_color,
+      cityName: gunclock_city_name,
+      // provide sensible defaults when user left these empty to avoid server-side rejection
+      shortHandCastName: gunclock_shortHandCast_name && gunclock_shortHandCast_name.trim() !== '' ? gunclock_shortHandCast_name : 'gunman',
+      longHandCastName: gunclock_longHandCast_name && gunclock_longHandCast_name.trim() !== '' ? gunclock_longHandCast_name : 'uma'
+    };
+
+    var inputData = { query, variables };
+    // DEBUG: log the exact query and payload we're sending
+    console.log('Sending createGunclock payload:', inputData);
 
     fetch(
       GUNCLOCK_GRAPHDB,
@@ -92,11 +99,18 @@ export default class Gunclock extends Component {
       }
     )
     .then((response) => {
+      console.log('HTTP status for createGunclock:', response.status, response.statusText);
       return response.json();
     })
     .then((response_json) => {
-      console.log(response_json);
+      console.log('createGunclock response JSON:', response_json);
+      if (response_json && response_json.data && response_json.data.createGunclock === null) {
+        console.warn('createGunclock returned null ? check server logs / resolver behavior. Full response:', response_json);
+      }
       this.getGunclocksGQL();
+    })
+    .catch((err) => {
+      console.error('Network/error during createGunclock fetch:', err);
     });
   }
 
@@ -105,22 +119,28 @@ export default class Gunclock extends Component {
 
     console.log("updateGunclockGQL(): started.");
 
-    var inputData = {
-     query : `
-        mutation {
-          updateGunclock(
-            uuid: "` + uuid + `",
-            size: ` + gunclock_size + `,
-            color: "` + gunclock_color + `",
-            cityName: "` + gunclock_city_name + `",
-            shortHandCastName: "` + gunclock_shortHandCast_name + `",
-            longHandCastName: "` + gunclock_longHandCast_name + `"
-          ) {
-            _id
-          }
-        }
-      `
-    }
+    // Use GraphQL variables to avoid string-concatenation issues
+    const query = `mutation UpdateGunclock($uuid: String!, $size: Int!, $color: String!, $cityName: String!, $shortHandCastName: String!, $longHandCastName: String!) {
+      updateGunclock(
+        uuid: $uuid,
+        size: $size,
+        color: $color,
+        cityName: $cityName,
+        shortHandCastName: $shortHandCastName,
+        longHandCastName: $longHandCastName
+      ) { _id }
+    }`;
+
+    const variables = {
+      uuid: uuid,
+      size: Number(gunclock_size) || 0,
+      color: gunclock_color,
+      cityName: gunclock_city_name,
+      shortHandCastName: gunclock_shortHandCast_name && gunclock_shortHandCast_name.trim() !== '' ? gunclock_shortHandCast_name : 'gunman',
+      longHandCastName: gunclock_longHandCast_name && gunclock_longHandCast_name.trim() !== '' ? gunclock_longHandCast_name : 'uma'
+    };
+
+    var inputData = { query, variables };
 
     fetch(
       GUNCLOCK_GRAPHDB,
@@ -140,7 +160,7 @@ export default class Gunclock extends Component {
       console.log(response_json);
       this.getGunclocksGQL();
 
-      this.setState({
+      this.safeSetState({
         gunclock_id : '',
         gunclock_uuid : '',
         gunclock_size : '',
@@ -158,23 +178,24 @@ export default class Gunclock extends Component {
   showGunclockGQL(uuid) {
 
     console.log("showGunclockGQL(): uuid= " + uuid);
+    const query = `query ShowGunclock($uuid: String!) {
+      Gunclock(uuid: $uuid) {
+        _id
+        uuid
+        size
+        color
+        city { name }
+        shortHandCast { name text }
+        longHandCast { name text }
+      }
+    }`;
 
-    var inputData = {
-      query: `
-        { 
-          Gunclock (uuid: "` + uuid + `"
-          ) {
-            _id,
-            uuid,
-            size,
-            color,
-            city{name},
-            shortHandCast{name,text},
-            longHandCast{name,text}
-          }
-        }
-      `
-    }
+    const variables = { uuid };
+
+    var inputData = { query, variables };
+
+    // DEBUG
+    console.log('Sending showGunclock payload:', inputData);
 
     fetch(
       GUNCLOCK_GRAPHDB,
@@ -188,10 +209,11 @@ export default class Gunclock extends Component {
       }
     )
     .then((response) => {
+      console.log('HTTP status for showGunclock:', response.status, response.statusText);
       return response.json();
     })
     .then((response_json) => {
-      console.log(response_json);
+      console.log('showGunclock response JSON:', response_json);
       var gunclock_string 
         = getGunClock(
            { 
@@ -199,19 +221,18 @@ export default class Gunclock extends Component {
              cityName  : response_json.data.Gunclock[0].city.name, 
              shortHandCastText : response_json.data.Gunclock[0].shortHandCast.text,
              longHandCastText : response_json.data.Gunclock[0].longHandCast.text,
-//           targetTimezoneOffsetHour : -9
            }
         );
-        console.log(response_json.data.Gunclock[0]._id);
-        console.log(response_json.data.Gunclock[0].uuid);
-        console.log(response_json.data.Gunclock[0].size);
-        console.log(response_json.data.Gunclock[0].color);
-        console.log(response_json.data.Gunclock[0].shortHandCast.name);
-        console.log(response_json.data.Gunclock[0].longHandCast.text);
-        console.log(response_json.data.Gunclock[0].longHandCast.name);
-        console.log(response_json.data.Gunclock[0].shortHandCast.text);
-        console.log(gunclock_string);
-      this.setState({
+      console.log(response_json.data.Gunclock[0]._id);
+      console.log(response_json.data.Gunclock[0].uuid);
+      console.log(response_json.data.Gunclock[0].size);
+      console.log(response_json.data.Gunclock[0].color);
+      console.log(response_json.data.Gunclock[0].shortHandCast.name);
+      console.log(response_json.data.Gunclock[0].longHandCast.text);
+      console.log(response_json.data.Gunclock[0].longHandCast.name);
+      console.log(response_json.data.Gunclock[0].shortHandCast.text);
+      console.log(gunclock_string);
+      this.safeSetState({
         gunclock_id: response_json.data.Gunclock[0]._id,
         gunclock_uuid: response_json.data.Gunclock[0].uuid,
         gunclock_size: response_json.data.Gunclock[0].size,
@@ -223,23 +244,21 @@ export default class Gunclock extends Component {
         showFlag: true,
         updateFlag: false
       });
-//      this.getGunclocksGQL();
+    })
+    .catch((err) => {
+      console.error('Network/error during showGunclock fetch:', err);
     });
   }
 
   deleteGunclockGQL(uuid) {
+    const query = `mutation DeleteGunclock($uuid: String!) {
+      deleteGunclock(uuid: $uuid) { _id }
+    }`;
 
-    var inputData = {
-     query : `
-        mutation {
-          deleteGunclock(
-            uuid: "` + uuid + `",
-          ) {
-            _id
-          }
-        }
-      `
-    }
+    const variables = { uuid };
+
+    var inputData = { query, variables };
+    console.log('Sending deleteGunclock payload:', inputData);
 
     fetch(
       GUNCLOCK_GRAPHDB,
@@ -253,11 +272,18 @@ export default class Gunclock extends Component {
       }
     )
     .then((response) => {
+      console.log('HTTP status for deleteGunclock:', response.status, response.statusText);
       return response.json();
     })
     .then((response_json) => {
-      console.log(response_json);
+      console.log('deleteGunclock response JSON:', response_json);
+      if (response_json && response_json.data && response_json.data.deleteGunclock === null) {
+        console.warn('deleteGunclock returned null ? check server logs / resolver behavior. Full response:', response_json);
+      }
       this.getGunclocksGQL();
+    })
+    .catch((err) => {
+      console.error('Network/error during deleteGunclock fetch:', err);
     });
   }
 
@@ -277,9 +303,32 @@ export default class Gunclock extends Component {
       updateFlag: false,
       showFlag: false
     };
+  }
 
+  componentDidMount() {
+    // mark mounted and load initial data
+    this._isMounted = true;
+    // If any state updates were queued before mount, apply them now
+    if (this._pendingState) {
+      this.setState(this._pendingState);
+      this._pendingState = null;
+    }
     this.getGunclocksGQL();
+  }
 
+  componentWillUnmount() {
+    // mark unmounted to avoid calling setState after unmount
+    this._isMounted = false;
+  }
+
+  // Use this instead of setState in async callbacks to avoid warnings
+  // If component not yet mounted, queue the state update and apply it in componentDidMount
+  safeSetState(stateObj) {
+    if (this._isMounted) {
+      this.setState(stateObj);
+    } else {
+      this._pendingState = Object.assign({}, this._pendingState || {}, stateObj);
+    }
   }
 
   onInputSize = (e) => {
@@ -382,13 +431,13 @@ export default class Gunclock extends Component {
          <td align="left">{gunclock.shortHandCast.name}</td>
          <td align="left">{gunclock.longHandCast.name}</td>
          <td>
-          <button onClick={ () => { this.showGunclockGQL(gunclock.uuid) }}>è¡¨ç¤º</button>
+          <button onClick={ () => { this.showGunclockGQL(gunclock.uuid) }}>•\¦</button>
          </td>
          <td>
-          <button onClick={ () => { this.updateGunclock(gunclock.uuid, gunclock.size, gunclock.color, gunclock.city.name, gunclock.shortHandCast.name, gunclock.longHandCast.name) }}>æ›´æ–°</button>
+          <button onClick={ () => { this.updateGunclock(gunclock.uuid, gunclock.size, gunclock.color, gunclock.city.name, gunclock.shortHandCast.name, gunclock.longHandCast.name) }}>XV</button>
          </td>
          <td>
-          <button onClick={ () => { this.deleteGunclockGQL(gunclock.uuid) }}>å‰Šé™¤</button>
+          <button onClick={ () => { this.deleteGunclockGQL(gunclock.uuid) }}>íœ</button>
          </td>
          </tr>)
         }
@@ -401,10 +450,10 @@ export default class Gunclock extends Component {
 
       <h1>create new gunclock</h1>
 
-      size:
-      <input type="text" onInput={this.onInputSize}/>
-      color:
-      <input type="text" onInput={this.onInputColor}/>
+  size:
+  <input type="text" value={gunclock_size} onChange={this.onInputSize}/>
+  color:
+  <input type="text" value={gunclock_color} onChange={this.onInputColor}/>
       <br />
 
       city:
@@ -439,7 +488,7 @@ export default class Gunclock extends Component {
       </select>
       <br />
 
-      <button onClick={this.addGunclock}>ç™»éŒ²</button>
+  <button onClick={this.addGunclock}>’Ç‰Á</button>
       <hr />
 
      </div>
@@ -494,10 +543,10 @@ export default class Gunclock extends Component {
       </select>
       <br />
 
-      <button onClick={() => {this.updateGunclockGQL(gunclock_uuid)}}>æ›´æ–°</button>
+  <button onClick={() => {this.updateGunclockGQL(gunclock_uuid)}}>XV</button>
 
       <br />
-      <a href="/">æˆ»ã‚‹</a>
+      <a href="/">æˆ»ã‚?</a>
       <hr />
 
      </div>
@@ -535,13 +584,13 @@ export default class Gunclock extends Component {
          <td align="left">{gunclock_shortHandCast_name}</td>
          <td align="left">{gunclock_longHandCast_name}</td>
          <td>
-          <button onClick={ () => { this.showGunclockGQL(gunclock_uuid) }}>è¡¨ç¤º</button>
+          <button onClick={ () => { this.showGunclockGQL(gunclock_uuid) }}>•\¦</button>
          </td>
          <td>
-          <button onClick={ () => { this.updateGunclock(gunclock_uuid, gunclock_size, gunclock_color) }}>æ›´æ–°</button>
+          <button onClick={ () => { this.updateGunclock(gunclock_uuid, gunclock_size, gunclock_color) }}>XV</button>
          </td>
          <td>
-          <button onClick={ () => { this.deleteGunclockGQL(gunclock_uuid) }}>å‰Šé™¤</button>
+          <button onClick={ () => { this.deleteGunclockGQL(gunclock_uuid) }}>íœ</button>
          </td>
         </tr>
        </tbody>
@@ -558,7 +607,7 @@ export default class Gunclock extends Component {
       </table>
 
       <br />
-      <a href="/">æˆ»ã‚‹</a>
+  <a href="/">–ß‚é</a>
       <hr />
 
      </div>
