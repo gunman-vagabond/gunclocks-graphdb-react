@@ -345,7 +345,7 @@ export default class Gunclock extends Component {
       <input type="text" onInput={this.onInputSize}/>
       color:
       <input type="text" onInput={this.onInputColor}/>
-      <button onClick={this.addGunclock}>登録</button>
+  <button onClick={this.addGunclock}>追加</button>
 
      </div>
 
@@ -362,10 +362,10 @@ export default class Gunclock extends Component {
       <input type="text" value={gunclock_size} onChange={this.onInputSize}/>
       color:
       <input type="text" value={gunclock_color} onChange={this.onInputColor}/>
-      <button onClick={() => {this.updateGunclockREST(gunclock_uuid)}}>更新</button>
+  <button onClick={() => {this.updateGunclockREST(gunclock_uuid)}}>更新</button>
 
-      <br />
-      <a href="/">戻る</a>
+  <br />
+  <a href="/">戻る</a>
      </div>
 
      <div
@@ -415,7 +415,7 @@ export default class Gunclock extends Component {
       </table>
 
       <br />
-      <a href="/">戻る</a>
+  <a href="/">戻る</a>
      </div>
 
     </div>

@@ -105,7 +105,7 @@ export default class Gunclock extends Component {
     .then((response_json) => {
       console.log('createGunclock response JSON:', response_json);
       if (response_json && response_json.data && response_json.data.createGunclock === null) {
-        console.warn('createGunclock returned null ? check server logs / resolver behavior. Full response:', response_json);
+        console.warn('createGunclock returned null â€” check server logs / resolver behavior. Full response:', response_json);
       }
       this.getGunclocksGQL();
     })
@@ -120,7 +120,7 @@ export default class Gunclock extends Component {
     console.log("updateGunclockGQL(): started.");
 
     // Use GraphQL variables to avoid string-concatenation issues
-    const query = `mutation UpdateGunclock($uuid: String!, $size: Int!, $color: String!, $cityName: String!, $shortHandCastName: String!, $longHandCastName: String!) {
+  const query = `mutation UpdateGunclock($uuid: ID!, $size: Int!, $color: String!, $cityName: String!, $shortHandCastName: String!, $longHandCastName: String!) {
       updateGunclock(
         uuid: $uuid,
         size: $size,
@@ -178,7 +178,7 @@ export default class Gunclock extends Component {
   showGunclockGQL(uuid) {
 
     console.log("showGunclockGQL(): uuid= " + uuid);
-    const query = `query ShowGunclock($uuid: String!) {
+  const query = `query ShowGunclock($uuid: ID!) {
       Gunclock(uuid: $uuid) {
         _id
         uuid
@@ -251,7 +251,7 @@ export default class Gunclock extends Component {
   }
 
   deleteGunclockGQL(uuid) {
-    const query = `mutation DeleteGunclock($uuid: String!) {
+  const query = `mutation DeleteGunclock($uuid: ID!) {
       deleteGunclock(uuid: $uuid) { _id }
     }`;
 
@@ -278,7 +278,7 @@ export default class Gunclock extends Component {
     .then((response_json) => {
       console.log('deleteGunclock response JSON:', response_json);
       if (response_json && response_json.data && response_json.data.deleteGunclock === null) {
-        console.warn('deleteGunclock returned null ? check server logs / resolver behavior. Full response:', response_json);
+        console.warn('deleteGunclock returned null â€” check server logs / resolver behavior. Full response:', response_json);
       }
       this.getGunclocksGQL();
     })
@@ -431,13 +431,13 @@ export default class Gunclock extends Component {
          <td align="left">{gunclock.shortHandCast.name}</td>
          <td align="left">{gunclock.longHandCast.name}</td>
          <td>
-          <button onClick={ () => { this.showGunclockGQL(gunclock.uuid) }}>•\¦</button>
+          <button onClick={ () => { this.showGunclockGQL(gunclock.uuid) }}>è¡¨ç¤º</button>
          </td>
          <td>
-          <button onClick={ () => { this.updateGunclock(gunclock.uuid, gunclock.size, gunclock.color, gunclock.city.name, gunclock.shortHandCast.name, gunclock.longHandCast.name) }}>XV</button>
+          <button onClick={ () => { this.updateGunclock(gunclock.uuid, gunclock.size, gunclock.color, gunclock.city.name, gunclock.shortHandCast.name, gunclock.longHandCast.name) }}>æ›´æ–°</button>
          </td>
          <td>
-          <button onClick={ () => { this.deleteGunclockGQL(gunclock.uuid) }}>íœ</button>
+          <button onClick={ () => { this.deleteGunclockGQL(gunclock.uuid) }}>å‰Šé™¤</button>
          </td>
          </tr>)
         }
@@ -488,7 +488,7 @@ export default class Gunclock extends Component {
       </select>
       <br />
 
-  <button onClick={this.addGunclock}>’Ç‰Á</button>
+  <button onClick={this.addGunclock}>è¿½åŠ </button>
       <hr />
 
      </div>
@@ -543,10 +543,10 @@ export default class Gunclock extends Component {
       </select>
       <br />
 
-  <button onClick={() => {this.updateGunclockGQL(gunclock_uuid)}}>XV</button>
+  <button onClick={() => {this.updateGunclockGQL(gunclock_uuid)}}>æ›´æ–°</button>
 
-      <br />
-      <a href="/">æˆ»ã‚?</a>
+  <br />
+  <a href="/">æˆ»ã‚‹</a>
       <hr />
 
      </div>
@@ -584,13 +584,13 @@ export default class Gunclock extends Component {
          <td align="left">{gunclock_shortHandCast_name}</td>
          <td align="left">{gunclock_longHandCast_name}</td>
          <td>
-          <button onClick={ () => { this.showGunclockGQL(gunclock_uuid) }}>•\¦</button>
+          <button onClick={ () => { this.showGunclockGQL(gunclock_uuid) }}>è¡¨ç¤º</button>
          </td>
          <td>
-          <button onClick={ () => { this.updateGunclock(gunclock_uuid, gunclock_size, gunclock_color) }}>XV</button>
+          <button onClick={ () => { this.updateGunclock(gunclock_uuid, gunclock_size, gunclock_color) }}>æ›´æ–°</button>
          </td>
          <td>
-          <button onClick={ () => { this.deleteGunclockGQL(gunclock_uuid) }}>íœ</button>
+          <button onClick={ () => { this.deleteGunclockGQL(gunclock_uuid) }}>å‰Šé™¤</button>
          </td>
         </tr>
        </tbody>
@@ -607,7 +607,7 @@ export default class Gunclock extends Component {
       </table>
 
       <br />
-  <a href="/">–ß‚é</a>
+  <a href="/">æˆ»ã‚‹</a>
       <hr />
 
      </div>
