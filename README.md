@@ -2,6 +2,16 @@
 
 This project was generated with react.
 
+## install
+
+- install node.js application (react)
+```
+git clone https://github.com/gunman-vagabond/gunclocks-graphdb-react
+cd gunclocks-graphdb-react/
+npm install
+```
+
+
 ## start with Gunclock GraphQL API Server
 
 You could use `start.sh` for starting server.
