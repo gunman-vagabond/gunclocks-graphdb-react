@@ -6,7 +6,7 @@ This project was generated with react.
 
 - install node.js application (react)
 ```
-git clone https://github.com/gunman-vagabond/gunclocks-graphdb-react
+git clone https://github.com/gunman-vagabond/gunclocks-graphdb-react.git
 cd gunclocks-graphdb-react/
 npm install
 ```
